@@ -29,9 +29,9 @@ namespace Evolve
             try
             {
                 dbVersion = QueryForString(wrappedConnection, "SELECT version()"); // attention ca marche aussi pour mysql
-                if (!dbVersion.IsNullOrWhiteSpace()) 
-                {
-                    return dbVersion.Contains("CockroachDB") ? DBMS.CockroachDB : DBMS.PostgreSQL;
+                if (!dbVersion.IsNullOrWhiteSpace()) {
+                    if (dbVersion.Contains("CockroachDB")) return DBMS.CockroachDB;
+                    if (dbVersion.Contains("PostgreSQL")) return DBMS.PostgreSQL;
                 }
             }
             catch { }
@@ -63,6 +63,17 @@ namespace Evolve
                     return DBMS.Cassandra;
             }
             catch { }
+
+            try {
+                Console.WriteLine("trying CH");
+                dbVersion = QueryForString(wrappedConnection, "select version();");
+                if (!dbVersion.IsNullOrWhiteSpace())
+                    return DBMS.Clickhouse;
+            }
+            catch (Exception e) {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
 
             throw new EvolveException(DBMSNotSupported);
         }

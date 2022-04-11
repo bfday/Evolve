@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Evolve.Connection;
 using Evolve.Dialect.Cassandra;
+using Evolve.Dialect.Clickhouse;
 using Evolve.Dialect.CockroachDB;
 using Evolve.Dialect.MySQL;
 using Evolve.Dialect.PostgreSQL;
@@ -24,6 +25,7 @@ namespace Evolve.Dialect
             [DBMS.SQLServer]        = wcnn => new SQLServerDatabase(wcnn),
             [DBMS.Cassandra]        = wcnn => new CassandraCluster(wcnn),
             [DBMS.CockroachDB]      = wcnn => new CockroachDBCluster(wcnn),
+            [DBMS.Clickhouse]       = wcnn => new ClickhouseDatabase(wcnn),
         };
 
         public static DatabaseHelper GetDatabaseHelper(DBMS dbmsType, WrappedConnection connection)
