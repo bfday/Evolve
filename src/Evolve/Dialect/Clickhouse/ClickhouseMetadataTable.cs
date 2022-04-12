@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Evolve.Dialect.PostgreSQL;
 using Evolve.Metadata;
 using Evolve.Migration;
@@ -32,12 +33,29 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override bool InternalIsExists()
         {
-            return _database.WrappedConnection.QueryForLong($"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{Schema}' AND table_name = '{TableName}'") == 1;
+            return _database.WrappedConnection.QueryForLong($"select count() from system.tables where database='{Schema}' and name='{TableName}'") == 1;
         }
 
         protected override void InternalCreate()
         {
-            string sql = $"CREATE TABLE \"{Schema}\".\"{TableName}\" " +
+
+            string sql = $@"create table {Schema}.{TableName}
+            (
+                id          String,
+                type        Int16,
+                version     String,
+                description String,
+                name        String,
+                checksum String,
+                installed_by String,
+                installed_on DateTime,
+                success Int8
+            )
+            engine = MergeTree PARTITION BY toYYYYMM(installed_on)
+                PRIMARY KEY (id)
+                ORDER BY (id, installed_on)
+                SETTINGS index_granularity = 8192;";
+            /*string sql = $"CREATE TABLE \"{Schema}\".\"{TableName}\" " +
              "( " +
                  "id SERIAL PRIMARY KEY NOT NULL, " +
                  "type SMALLINT, " +
@@ -48,14 +66,37 @@ namespace Evolve.Dialect.Clickhouse
                  "installed_by VARCHAR(100) NOT NULL, " +
                  "installed_on TIMESTAMP NOT NULL DEFAULT now(), " +
                  "success BOOLEAN NOT NULL " +
-             ")";
+             ")";*/
 
             _database.WrappedConnection.ExecuteNonQuery(sql);
         }
 
         protected override void InternalSave(MigrationMetadata metadata)
         {
-            string sql = $"INSERT INTO \"{Schema}\".\"{TableName}\" (type, version, description, name, checksum, installed_by, success) VALUES" +
+            string sql = $@"
+                INSERT INTO {Schema}.{TableName} (id,
+                                          type,
+                                          version,
+                                          description,
+                                          name,
+                                          checksum,
+                                          installed_by,
+                                          installed_on,
+                                          success)
+                values (
+                        generateUUIDv4(),
+                        {(int)metadata.Type},
+                        {(metadata.Version is null ? "null" : $"'{metadata.Version}'")}, 
+                        '{metadata.Description.TruncateWithEllipsis(200)}', 
+                        '{metadata.Name.TruncateWithEllipsis(1000)}', 
+                        '{metadata.Checksum}', 
+                        '{_database.CurrentUser}',
+                        now(),
+                        {(metadata.Success ? "1" : "0")}
+                );";
+            // Console.WriteLine($"Inserting '{sql}'");
+            
+            /*string sql = $"INSERT INTO \"{Schema}\".\"{TableName}\" (id, type, version, description, name, checksum, installed_by, success) VALUES" +
              "( " +
                 $"{(int)metadata.Type}, " +
                 $"{(metadata.Version is null ? "null" : $"'{metadata.Version}'")}, " +
@@ -64,7 +105,7 @@ namespace Evolve.Dialect.Clickhouse
                 $"'{metadata.Checksum}', " +
                 $"{_database.CurrentUser}, " +
                 $"{(metadata.Success ? "true" : "false")}" +
-             ")";
+             ")";*/
 
             _database.WrappedConnection.ExecuteNonQuery(sql);
         }

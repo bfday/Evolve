@@ -14,13 +14,14 @@ namespace Evolve.Dialect.Clickhouse
 
         public override bool IsExists()
         {
-            string sql = $"SELECT COUNT(*) FROM pg_namespace WHERE nspname = '{Name}'";
+            string sql = $"select COUNT(*) from system.databases where name='{Name}';";
             return _wrappedConnection.QueryForLong(sql) > 0;
         }
 
         public override bool IsEmpty()
         {
-            string sql = $"SELECT EXISTS " +
+            return false;
+            /*string sql = $"SELECT EXISTS " +
                           "(" +
                           "  SELECT c.oid " +
                           "  FROM pg_catalog.pg_class c " +
@@ -41,19 +42,19 @@ namespace Evolve.Dialect.Clickhouse
                          $"  WHERE n.nspname = '{Name}' AND d.objid IS NULL " +
                          $")";
 
-            return !_wrappedConnection.QueryForBool(sql);
+            return !_wrappedConnection.QueryForBool(sql);*/
         }
 
         public override bool Create()
         {
-            _wrappedConnection.ExecuteNonQuery($"CREATE SCHEMA \"{Name}\"");
+            _wrappedConnection.ExecuteNonQuery($"CREATE DATABASE \"{Name}\"");
 
             return true;
         }
 
         public override bool Drop()
         {
-            _wrappedConnection.ExecuteNonQuery($"DROP SCHEMA IF EXISTS \"{Name}\" CASCADE");
+            _wrappedConnection.ExecuteNonQuery($"DROP DATABASE IF EXISTS \"{Name}\"");
 
             return true;
         }
@@ -80,16 +81,16 @@ namespace Evolve.Dialect.Clickhouse
 
         protected void DropSequences()
         {
-            string sql = $"SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = '{Name}'";
+            /*string sql = $"SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = '{Name}'";
             _wrappedConnection.QueryForListOfString(sql).ToList().ForEach(seq =>
             {
                 _wrappedConnection.ExecuteNonQuery($"DROP SEQUENCE IF EXISTS \"{Name}\".\"{Quote(seq)}\"");
-            });
+            });*/
         }
 
         protected void DropBaseTypes(bool recreate)
         {
-            string sql = "SELECT typname, typcategory " +
+            /*string sql = "SELECT typname, typcategory " +
                          "FROM pg_catalog.pg_type t " +
                          "WHERE (t.typrelid = 0 OR (SELECT c.relkind = 'c' FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid)) " +
                          "AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = t.typelem AND el.typarray = t.oid) " +
@@ -110,7 +111,7 @@ namespace Evolve.Dialect.Clickhouse
                         _wrappedConnection.ExecuteNonQuery($"CREATE TYPE \"{Name}\".\"{Quote(x.TypeName)}\"");
                     }
                 });
-            }
+            }*/
         }
 
         protected void DropBaseAggregates()
@@ -125,16 +126,16 @@ namespace Evolve.Dialect.Clickhouse
 
         protected void DropEnums()
         {
-            string sql = $"SELECT t.typname FROM pg_catalog.pg_type t INNER JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = '{Name}' and t.typtype = 'e'";
+            /*string sql = $"SELECT t.typname FROM pg_catalog.pg_type t INNER JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = '{Name}' and t.typtype = 'e'";
             _wrappedConnection.QueryForListOfString(sql).ToList().ForEach(enumName =>
             {
                 _wrappedConnection.ExecuteNonQuery($"DROP TYPE \"{Name}\".\"{Quote(enumName)}\"");
-            });
+            });*/
         }
 
         protected void DropDomains()
         {
-            string sql = "SELECT t.typname " +
+            /*string sql = "SELECT t.typname " +
                          "FROM pg_catalog.pg_type t " +
                          "LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace " +
                          "LEFT JOIN pg_depend dep ON dep.objid = t.oid AND dep.deptype = 'e' " +
@@ -144,7 +145,7 @@ namespace Evolve.Dialect.Clickhouse
             _wrappedConnection.QueryForListOfString(sql).ToList().ForEach(domain =>
             {
                 _wrappedConnection.ExecuteNonQuery($"DROP DOMAIN \"{Name}\".\"{Quote(domain)}\"");
-            });
+            });*/
         }
 
         protected void DropViews()
