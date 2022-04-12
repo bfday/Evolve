@@ -150,7 +150,7 @@ namespace Evolve.Dialect.Clickhouse
 
         protected void DropViews()
         {
-            string sql = "SELECT relname " +
+            /*string sql = "SELECT relname " +
                          "FROM pg_catalog.pg_class c " +
                          "JOIN pg_namespace n ON n.oid = c.relnamespace " +
                          "LEFT JOIN pg_depend dep ON dep.objid = c.oid AND dep.deptype = 'e' " +
@@ -159,12 +159,12 @@ namespace Evolve.Dialect.Clickhouse
             _wrappedConnection.QueryForListOfString(sql).ToList().ForEach(view =>
             {
                 _wrappedConnection.ExecuteNonQuery($"DROP VIEW IF EXISTS \"{Name}\".\"{Quote(view)}\" CASCADE");
-            });
+            });*/
         }
 
         protected void DropTables()
         {
-            string sql = "SELECT t.table_name " +
+            /*string sql = "SELECT t.table_name " +
                          "FROM information_schema.tables t " +
                          "LEFT JOIN pg_depend dep ON dep.objid = (quote_ident(t.table_schema)||'.'||quote_ident(t.table_name))::regclass::oid AND dep.deptype = 'e' " +
                         $"WHERE table_schema = '{Name}' " +
@@ -175,7 +175,7 @@ namespace Evolve.Dialect.Clickhouse
             _wrappedConnection.QueryForListOfString(sql).ToList().ForEach(table =>
             {
                 _wrappedConnection.ExecuteNonQuery($"DROP TABLE IF EXISTS \"{Name}\".\"{Quote(table)}\" CASCADE");
-            });
+            });*/
         }
 
         private static string Quote(string dbObject) => dbObject.Replace("\"", "\"\"");

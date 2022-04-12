@@ -14,9 +14,14 @@ namespace Evolve.Dialect.Clickhouse
         /// <param name="schema"> Existing database schema name. </param>
         /// <param name="tableName"> Metadata table name. </param>
         /// <param name="database"> A database helper used to change and restore schema of the metadata table. </param>
-        public ClickhouseMetadataTable(string schema, string tableName, DatabaseHelper database) 
+        public ClickhouseMetadataTable(
+            string schema,
+            string tableName,
+            DatabaseHelper database
+        )
             : base(schema, tableName, database)
         {
+            
         }
 
         /// <summary>
@@ -100,7 +105,7 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override IEnumerable<MigrationMetadata> InternalGetAllMetadata()
         {
-            string sql = $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM \"{Schema}\".\"{TableName}\"";
+            string sql = $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM {Schema}.{TableName}";
             return _database.WrappedConnection.QueryForList(sql, r =>
             {
                 return new MigrationMetadata(r[2] as string, r.GetString(3), r.GetString(4), (MetadataType)r.GetInt16(1))
