@@ -8,7 +8,7 @@ namespace Evolve.Dialect
     /// </summary>
     internal class SimpleSqlStatementBuilder : SqlStatementBuilderBase
     {
-        public override string? BatchDelimiter => null;
+        public override string? StatementDelimiter => null;
 
         protected override IEnumerable<SqlStatement> Parse(string sqlScript, bool transactionEnabled)
         {

@@ -11,9 +11,9 @@ namespace Evolve.Dialect
     internal abstract class SqlStatementBuilderBase
     {
         /// <summary>
-        ///     Gets the database bacth delimiter.
+        ///     Gets the database batch delimiter.
         /// </summary>
-        public abstract string? BatchDelimiter { get; }
+        public abstract string? StatementDelimiter { get; }
 
         /// <summary>
         ///     Returns a <see cref="List{SqlStatement}"/> given a <paramref name="migrationScript"/>.

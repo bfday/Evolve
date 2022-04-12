@@ -10,7 +10,7 @@ namespace Evolve.Dialect.SQLServer
     internal class SQLServerStatementBuilder : SqlStatementBuilderBase
     {
         /// <inheritdoc />
-        public override string BatchDelimiter => "GO";
+        public override string StatementDelimiter => "GO";
 
         protected override IEnumerable<SqlStatement> Parse(string migrationScript, bool transactionEnabled)
         {
@@ -25,7 +25,7 @@ namespace Evolve.Dialect.SQLServer
             }
 
             // Split by delimiter
-            var statements = Regex.Split(sqlScript, $@"^[\t ]*{BatchDelimiter}(?!\w)[\t ]*\d*[\t ]*(?:--.*)?", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            var statements = Regex.Split(sqlScript, $@"^[\t ]*{StatementDelimiter}(?!\w)[\t ]*\d*[\t ]*(?:--.*)?", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
             // Remove empties, trim, and return
             return statements.Where(x => !x.IsNullOrWhiteSpace())

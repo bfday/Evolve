@@ -41,7 +41,7 @@ namespace Evolve.Dialect.Clickhouse
 
             string sql = $@"create table {Schema}.{TableName}
             (
-                id          String,
+                id          Int32,
                 type        Int16,
                 version     String,
                 description String,
@@ -55,26 +55,18 @@ namespace Evolve.Dialect.Clickhouse
                 PRIMARY KEY (id)
                 ORDER BY (id, installed_on)
                 SETTINGS index_granularity = 8192;";
-            /*string sql = $"CREATE TABLE \"{Schema}\".\"{TableName}\" " +
-             "( " +
-                 "id SERIAL PRIMARY KEY NOT NULL, " +
-                 "type SMALLINT, " +
-                 "version VARCHAR(50), " +
-                 "description VARCHAR(200) NOT NULL, " +
-                 "name VARCHAR(300) NOT NULL, " +
-                 "checksum VARCHAR(32), " +
-                 "installed_by VARCHAR(100) NOT NULL, " +
-                 "installed_on TIMESTAMP NOT NULL DEFAULT now(), " +
-                 "success BOOLEAN NOT NULL " +
-             ")";*/
 
             _database.WrappedConnection.ExecuteNonQuery(sql);
         }
 
         protected override void InternalSave(MigrationMetadata metadata)
         {
-            string sql = $@"
-                INSERT INTO {Schema}.{TableName} (id,
+            string sql = $@"select max(id) from {Schema}.{TableName}";
+            var recordId = (int) _database.WrappedConnection.QueryForLong(sql);
+            recordId++;
+            var now = new DateTime().ToString("yyyy-MM-dd HH:mm:ss");
+            sql = $@"INSERT INTO {Schema}.{TableName} (
+                                          id,
                                           type,
                                           version,
                                           description,
@@ -82,30 +74,17 @@ namespace Evolve.Dialect.Clickhouse
                                           checksum,
                                           installed_by,
                                           installed_on,
-                                          success)
-                values (
-                        generateUUIDv4(),
+                                          success) values (
+                        {recordId},
                         {(int)metadata.Type},
                         {(metadata.Version is null ? "null" : $"'{metadata.Version}'")}, 
                         '{metadata.Description.TruncateWithEllipsis(200)}', 
                         '{metadata.Name.TruncateWithEllipsis(1000)}', 
                         '{metadata.Checksum}', 
                         '{_database.CurrentUser}',
-                        now(),
+                        '{now}',
                         {(metadata.Success ? "1" : "0")}
                 );";
-            // Console.WriteLine($"Inserting '{sql}'");
-            
-            /*string sql = $"INSERT INTO \"{Schema}\".\"{TableName}\" (id, type, version, description, name, checksum, installed_by, success) VALUES" +
-             "( " +
-                $"{(int)metadata.Type}, " +
-                $"{(metadata.Version is null ? "null" : $"'{metadata.Version}'")}, " +
-                $"'{metadata.Description.TruncateWithEllipsis(200)}', " +
-                $"'{metadata.Name.TruncateWithEllipsis(1000)}', " +
-                $"'{metadata.Checksum}', " +
-                $"{_database.CurrentUser}, " +
-                $"{(metadata.Success ? "true" : "false")}" +
-             ")";*/
 
             _database.WrappedConnection.ExecuteNonQuery(sql);
         }

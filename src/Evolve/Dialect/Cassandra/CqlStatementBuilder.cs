@@ -11,7 +11,7 @@ namespace Evolve.Dialect.Cassandra
     {
         private const string StatementTerminationCharacter = ";";
 
-        public override string? BatchDelimiter => null;
+        public override string? StatementDelimiter => null;
 
         protected override IEnumerable<SqlStatement> Parse(string sqlScript, bool transactionEnabled)
         {

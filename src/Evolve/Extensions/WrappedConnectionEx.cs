@@ -65,7 +65,6 @@ namespace Evolve
             catch { }
 
             try {
-                Console.WriteLine("trying CH");
                 dbVersion = QueryForString(wrappedConnection, "select version();");
                 if (!dbVersion.IsNullOrWhiteSpace())
                     return DBMS.Clickhouse;

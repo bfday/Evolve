@@ -15,7 +15,7 @@ namespace Evolve.Dialect.Clickhouse
 
         public override string CurrentUser => "current_user";
 
-        public override SqlStatementBuilderBase SqlStatementBuilder => new SimpleSqlStatementBuilder();
+        public override SqlStatementBuilderBase SqlStatementBuilder => new ClickhouseStatementBuilder();
 
         public override IEvolveMetadata GetMetadataTable(string schema, string tableName) => new ClickhouseMetadataTable(schema, tableName, this);
 

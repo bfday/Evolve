@@ -347,7 +347,7 @@ namespace Evolve
             var startVersion = metadata.FindStartVersion();
             var lastAppliedVersion = metadata.FindLastAppliedVersion();
             var migrations = GetAllPendingMigration(startVersion, lastAppliedVersion);
-
+            
             foreach (var migration in migrations)
             {
                 if (SkipNextMigrations)
@@ -359,7 +359,6 @@ namespace Evolve
                     ExecuteMigration(migration, db);
                 }
             }
-
             return migrations.Any() ? migrations.Last().Version! : lastAppliedVersion;
         }
 
@@ -619,8 +618,8 @@ namespace Evolve
                 NbMigration++;
                 AppliedMigrations.Add(migration.Name);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
+                _log($"Rolling back transaction. Reason: {ex.Message}");
                 stopWatch.Stop();
                 TotalTimeElapsedInMs += stopWatch.ElapsedMilliseconds;
                 db.WrappedConnection.TryRollback();
