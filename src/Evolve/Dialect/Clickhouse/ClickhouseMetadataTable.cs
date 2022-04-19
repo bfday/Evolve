@@ -66,10 +66,10 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override void InternalSave(MigrationMetadata metadata)
         {
-            string sql = $@"select max(id) from {Schema}.{TableName}";
+            string sql = $"select max(id) from \"{Schema}\".\"{TableName}\";";
             var recordId = (int) _database.WrappedConnection.QueryForLong(sql);
             recordId++;
-            var now = new DateTime().ToString("yyyy-MM-dd HH:mm:ss");
+            var now = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
             sql = $@"INSERT INTO {Schema}.{TableName} (
                                           id,
                                           type,
@@ -105,7 +105,7 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override IEnumerable<MigrationMetadata> InternalGetAllMetadata()
         {
-            string sql = $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM {Schema}.{TableName}";
+            string sql = $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM \"{Schema}\".\"{TableName}\"";
             return _database.WrappedConnection.QueryForList(sql, r =>
             {
                 return new MigrationMetadata(r[2] as string, r.GetString(3), r.GetString(4), (MetadataType)r.GetInt16(1))
