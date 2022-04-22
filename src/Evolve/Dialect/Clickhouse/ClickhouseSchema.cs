@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Evolve.Connection;
+﻿using Evolve.Connection;
 
 namespace Evolve.Dialect.Clickhouse
 {
@@ -54,14 +53,14 @@ namespace Evolve.Dialect.Clickhouse
 
         public override bool Drop()
         {
-            _wrappedConnection.ExecuteNonQuery($"DROP DATABASE IF EXISTS \"{Name}\"");
+            // _wrappedConnection.ExecuteNonQuery($"DROP DATABASE IF EXISTS \"{Name}\"");
 
             return true;
         }
 
         public override bool Erase()
         {
-            DropMaterializedViews(); // PostgreSQL >= 9.3
+            DropMaterializedViews();
             DropViews();
             DropTables();
             DropBaseTypes(true);
@@ -69,7 +68,7 @@ namespace Evolve.Dialect.Clickhouse
             DropEnums();
             DropDomains();
             DropSequences();
-            DropBaseAggregates(); // PostgreSQL < 11
+            DropBaseAggregates();
             DropBaseTypes(false);
 
             return true;

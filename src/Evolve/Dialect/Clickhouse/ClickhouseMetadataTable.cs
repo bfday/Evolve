@@ -66,8 +66,8 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override void InternalSave(MigrationMetadata metadata)
         {
-            var schema = $"\"{Schema}\".\"{TableName}\"";
-            string sql = $"select max(id) from {schema};";
+            var tableNameWithSchema = $"\"{Schema}\".\"{TableName}\"";
+            string sql = $"select max(id) from {tableNameWithSchema};";
             var recordId = (int) _database.WrappedConnection.QueryForLong(sql);
             recordId++;
             var now = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
@@ -93,7 +93,7 @@ namespace Evolve.Dialect.Clickhouse
                 );";
 
             _database.WrappedConnection.ExecuteNonQuery(sql);
-            _database.WrappedConnection.ExecuteNonQuery($"optimize table {schema};");
+            _database.WrappedConnection.ExecuteNonQuery($"optimize table {tableNameWithSchema};");
         }
 
         protected override void InternalUpdateChecksum(int migrationId, string checksum)
@@ -107,9 +107,10 @@ namespace Evolve.Dialect.Clickhouse
 
         protected override IEnumerable<MigrationMetadata> InternalGetAllMetadata()
         {
-            var schema = $"\"{Schema}\".\"{TableName}\"";
+            var tableNameWithSchema = $"\"{Schema}\".\"{TableName}\"";
+            _database.WrappedConnection.ExecuteNonQuery($"optimize table {tableNameWithSchema};");
             var sql =
-                $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM {schema} order by id asc;";
+                $"SELECT id, type, version, description, name, checksum, installed_by, installed_on, success FROM {tableNameWithSchema} order by id asc;";
             var migrationMetadatas = _database.WrappedConnection.QueryForList(
                 sql,
                 r =>
