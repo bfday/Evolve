@@ -347,6 +347,7 @@ namespace Evolve
             var startVersion = metadata.FindStartVersion();
             var lastAppliedVersion = metadata.FindLastAppliedVersion();
             var migrations = GetAllPendingMigration(startVersion, lastAppliedVersion);
+            Console.WriteLine($"startVersion '{startVersion}' lastAppliedVersion '{lastAppliedVersion}'");
             
             foreach (var migration in migrations)
             {
